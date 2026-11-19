@@ -1,0 +1,70 @@
+# Smart Updater example configuration. Everything here is optional; the defaults are safe.
+# Copy to /etc/smart-updater/config.toml (Linux), %ProgramData%\SmartUpdater\config.toml (Windows) or
+# "/Library/Application Support/SmartUpdater/config.toml" (macOS).
+# TOML needs Python 3.11+. On older Python (Apple's python3 is older than that) use the same structure as
+# a config.json file next to it: see config.example.json.
+
+[general]
+# state_dir = "/var/lib/smart-updater"   # where reports, logs and state live
+keep_runs = 30                 # how many run folders (logs, command output) to keep
+critical_after_days = 3        # a stuck security problem becomes CRITICAL after this long
+reboot_critical_days = 14      # a pending reboot becomes CRITICAL after this long
+max_cascade_depth = 4          # how many times to widen a group of updates to fix a conflict
+max_group_size = 25            # largest set of packages allowed to change together
+batch_size = 1                 # 1 = one change at a time (safest, easiest to attribute breakage)
+max_updates_per_run = 0        # 0 = no limit
+max_failures = 3               # stop the run after this many failed changes in a row
+quarantine_days = 7            # pause a version that failed verification this long
+security_only = false          # true = skip everything that is not a security update
+allow_new_installs = true      # allow updates that pull in new dependency packages
+osv_enabled = true             # pip only: look up vulnerabilities on OSV.dev (sends names + versions)
+
+[backends.apt]
+enabled = true
+max_bump = "major"             # largest version jump applied unattended: patch | minor | major
+
+[backends.winget]
+enabled = true
+max_bump = "major"
+
+[backends.brew]                  # macOS only. Formulae and casks, run as the user who owns Homebrew.
+enabled = true
+max_bump = "minor"             # Homebrew cannot roll back, so the default is more careful than apt
+greedy_casks = false           # true = also update casks that update themselves (Chrome, Slack, ...)
+
+[backends.softwareupdate]        # macOS only. Never installs macOS itself or anything that needs a restart.
+enabled = true
+
+[backends.pip]
+enabled = false                # opt-in. Only the environments listed below are touched.
+max_bump = "minor"
+environments = ["/opt/myapp/venv"]   # a venv directory, an interpreter path, or "current"
+
+# Rules: the first match wins; yours are checked before the built-in ones.
+# action = "hold"   never update (reported as FYI, or a warning if it is a security fix)
+# action = "manual" needs a person (always reported)
+# action = "allow"  update unattended, optionally with a different max_bump
+
+[[rules]]
+match = ["postgresql-*", "mariadb-server*"]
+action = "manual"
+reason = "Database server: update inside a maintenance window."
+
+[[rules]]
+match = "Google.Chrome"
+action = "allow"
+max_bump = "major"             # browsers bump the major version constantly
+
+[[rules]]
+match = "grub-pc"
+backend = "apt"
+action = "allow"               # overrides the built-in "bootloader needs a human" rule. Think twice.
+
+# Health checks: commands that must keep passing. A check that already fails before an
+# update is never blamed on it. Use a list so no shell is involved.
+[[health_checks]]
+name = "web app answers"
+command = ["curl", "-fsS", "--max-time", "5", "http://localhost:8080/health"]
+timeout = 10
+retries = 3
+retry_delay = 5

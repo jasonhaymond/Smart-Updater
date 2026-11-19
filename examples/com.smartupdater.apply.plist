@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Runs Smart Updater every day on macOS. Install as root (see the README, "Scheduling"):
+    sudo install -d -m 755 -o root -g wheel /usr/local/libexec/smart-updater
+    sudo install -m 755 -o root -g wheel smart-updater.pyz /usr/local/libexec/smart-updater/
+    sudo install -m 644 -o root -g wheel com.smartupdater.apply.plist /Library/LaunchDaemons/
+    sudo launchctl bootstrap system /Library/LaunchDaemons/com.smartupdater.apply.plist
+  NOT TESTED on a real Mac yet.
+
+  Why these paths: the job runs as root, so it only runs files that only root can change. Homebrew's
+  folders (e.g. /usr/local/bin on an Intel Mac) can be writable by a normal user, so they are avoided
+  here, and the PATH below deliberately leaves them out.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.smartupdater.apply</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/usr/local/libexec/smart-updater/smart-updater.pyz</string>
+    <string>apply</string>
+    <string>--quiet</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>3</integer>
+    <key>Minute</key>
+    <integer>41</integer>
+  </dict>
+  <key>LowPriorityIO</key>
+  <true/>
+  <key>Nice</key>
+  <integer>10</integer>
+  <key>StandardOutPath</key>
+  <string>/var/log/smart-updater.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/var/log/smart-updater.err.log</string>
+</dict>
+</plist>

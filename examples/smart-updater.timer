@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Smart Updater daily
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+RandomizedDelaySec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

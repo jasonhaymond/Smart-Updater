@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+*.pyz
+
+# Local state and configs (never commit these)
+/state/
+smart-updater.toml
+smart-updater.json
+*.log

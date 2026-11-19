@@ -1,0 +1,76 @@
+{
+  "general": {
+    "keep_runs": 30,
+    "critical_after_days": 3,
+    "reboot_critical_days": 14,
+    "max_cascade_depth": 4,
+    "max_group_size": 25,
+    "batch_size": 1,
+    "max_updates_per_run": 0,
+    "max_failures": 3,
+    "quarantine_days": 7,
+    "security_only": false,
+    "allow_new_installs": true,
+    "osv_enabled": true
+  },
+  "backends": {
+    "apt": {
+      "enabled": true,
+      "max_bump": "major"
+    },
+    "winget": {
+      "enabled": true,
+      "max_bump": "major"
+    },
+    "brew": {
+      "enabled": true,
+      "max_bump": "minor",
+      "greedy_casks": false
+    },
+    "softwareupdate": {
+      "enabled": true
+    },
+    "pip": {
+      "enabled": false,
+      "max_bump": "minor",
+      "environments": [
+        "/opt/myapp/venv"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "match": [
+        "postgresql-*",
+        "mariadb-server*"
+      ],
+      "action": "manual",
+      "reason": "Database server: update inside a maintenance window."
+    },
+    {
+      "match": "Google.Chrome",
+      "action": "allow",
+      "max_bump": "major"
+    },
+    {
+      "match": "grub-pc",
+      "backend": "apt",
+      "action": "allow"
+    }
+  ],
+  "health_checks": [
+    {
+      "name": "web app answers",
+      "command": [
+        "curl",
+        "-fsS",
+        "--max-time",
+        "5",
+        "http://localhost:8080/health"
+      ],
+      "timeout": 10,
+      "retries": 3,
+      "retry_delay": 5
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+[Unit]
+Description=Smart Updater: apply safe updates, verify, roll back on trouble
+Documentation=file:///usr/local/share/doc/smart-updater/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/smart-updater apply --quiet --config /etc/smart-updater/config.toml
+# Exit 1 and 2 report findings (something needs attention); they are not failures of the job itself.
+# Only 3 (could not run) should mark the unit as failed.
+SuccessExitCodes=0 1 2
+Nice=10
+IOSchedulingClass=idle
